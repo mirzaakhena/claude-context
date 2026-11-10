@@ -57,8 +57,13 @@ if [ -f "$rekaman" ]; then
         echo "Konteks terpakai : ${pct_bulat}%"
         echo "Konteks tersisa  : $(( 100 - pct_bulat ))%"
         if [ -n "$ukuran" ]; then
-            terpakai=$(awk -v p="$pct" -v u="$ukuran" 'BEGIN{printf "%d", p*u/100}')
-            echo "Ukuran jendela   : $(ribuan "$ukuran") token (≈ $(ribuan "$terpakai") terpakai, ≈ $(ribuan $(( ukuran - terpakai ))) tersisa)"
+            terpakai=$(jq -r '.context_window.total_input_tokens // empty' "$rekaman")
+            if [ -n "$terpakai" ]; then
+                echo "Ukuran jendela   : $(ribuan "$ukuran") token ($(ribuan "$terpakai") terpakai, $(ribuan $(( ukuran - terpakai ))) tersisa)"
+            else
+                terpakai=$(awk -v p="$pct" -v u="$ukuran" 'BEGIN{printf "%d", p*u/100}')
+                echo "Ukuran jendela   : $(ribuan "$ukuran") token (≈ $(ribuan "$terpakai") terpakai, ≈ $(ribuan $(( ukuran - terpakai ))) tersisa)"
+            fi
         fi
     else
         echo "Konteks          : rekaman tidak memuat context_window.used_percentage"
